@@ -1,0 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════════
+   FINCHECK AI — Finance Domain Theme
+   Background: Gold coins + candlestick charts + bar graphs
+   Palette: Emerald green, Gold, White mist
+   ══════════════════════════════════════════════════════════= */
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body, #root { min-height: 100%; }
+
+  body {
+    /* ── Finance domain background — fixed so it never scrolls ── */
+    background-image: url('/bg-finance-v2.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: #E8F5F0;
+
+    color: #1A2E2A;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: rgba(8, 127, 91, 0.20);
+    color: #1A2E2A;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GLASSMORPHISM — transparent enough to see the background
+   ══════════════════════════════════════════════════════════= */
+
+/* ── Sidebar ───────────────────────────────────────────────── */
+.sidebar-glass {
+  background: rgba(255, 255, 255, 0.52) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border-right: 1px solid rgba(8, 127, 91, 0.20) !important;
+  box-shadow: 4px 0 40px rgba(8, 127, 91, 0.10) !important;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.header-glass {
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  border-bottom: 1px solid rgba(8, 127, 91, 0.18) !important;
+  box-shadow: 0 4px 30px rgba(8, 127, 91, 0.08) !important;
+}
+
+/* ── Cards — clearly transparent so background shows ───────── */
+.card-glass {
+  background: rgba(255, 255, 255, 0.48);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.70);
+  box-shadow: 0 4px 24px rgba(8, 127, 91, 0.08), 0 1px 4px rgba(0,0,0,0.03);
+}
+
+/* ── Mint tinted card ──────────────────────────────────────── */
+.card-mint {
+  background: rgba(214, 242, 229, 0.42);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(8, 127, 91, 0.20);
+  box-shadow: 0 4px 24px rgba(8, 127, 91, 0.10);
+}
+
+/* ── Rose tinted card ──────────────────────────────────────── */
+.card-rose {
+  background: rgba(255, 228, 228, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(201, 112, 112, 0.20);
+  box-shadow: 0 4px 20px rgba(201, 112, 112, 0.08);
+}
+
+/* ── Gold tinted card ──────────────────────────────────────── */
+.card-gold {
+  background: rgba(255, 243, 204, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 168, 67, 0.25);
+  box-shadow: 0 4px 20px rgba(212, 168, 67, 0.10);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TAILWIND OVERRIDES — glassy so bg shows through
+   ══════════════════════════════════════════════════════════= */
+.bg-surface {
+  background: rgba(255, 255, 255, 0.48) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+.bg-white {
+  background: rgba(255, 255, 255, 0.60) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.bg-background {
+  background: rgba(232, 245, 240, 0.35) !important;
+}
+
+/* Inputs — more solid so text is readable */
+input, select, textarea {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(8, 127, 91, 0.22) !important;
+}
+input:focus, select:focus, textarea:focus {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(8, 127, 91, 0.50) !important;
+  box-shadow: 0 0 0 3px rgba(8, 127, 91, 0.12) !important;
+  outline: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBARS
+   ══════════════════════════════════════════════════════════= */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(8, 127, 91, 0.25);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(8, 127, 91, 0.45); }
+
+/* ═══════════════════════════════════════════════════════════
+   CARD HOVER
+   ══════════════════════════════════════════════════════════= */
+.card-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.68) !important;
+  box-shadow: 0 14px 40px rgba(8, 127, 91, 0.15), 0 3px 10px rgba(0,0,0,0.06) !important;
+  border-color: rgba(8, 127, 91, 0.28) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATUS BADGES
+   ══════════════════════════════════════════════════════════= */
+.badge-consistent {
+  background: rgba(8, 127, 91, 0.14);
+  color: #087F5B;
+  border: 1px solid rgba(8, 127, 91, 0.25);
+}
+.badge-unresolved {
+  background: rgba(201, 112, 112, 0.14);
+  color: #B85555;
+  border: 1px solid rgba(201, 112, 112, 0.25);
+}
+.badge-potential {
+  background: rgba(212, 168, 67, 0.16);
+  color: #9A7A10;
+  border: 1px solid rgba(212, 168, 67, 0.28);
+}
+.badge-explained {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563EB;
+  border: 1px solid rgba(37, 99, 235, 0.20);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+   ══════════════════════════════════════════════════════════= */
+@keyframes nodePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(8,127,91,0.4); }
+  50%       { transform: scale(1.04); box-shadow: 0 0 0 8px rgba(8,127,91,0); }
+}
+.animate-node-pulse { animation: nodePulse 2s ease-in-out infinite; }
+
+@keyframes shimmerGreen {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.shimmer-loading {
+  background: linear-gradient(
+    90deg,
+    rgba(214,242,229,0.3) 25%,
+    rgba(255,255,255,0.6) 50%,
+    rgba(214,242,229,0.3) 75%
+  );
+  background-size: 200% auto;
+  animation: shimmerGreen 1.8s linear infinite;
+}
+
+/* ── Highlight ─────────────────────────────────────────────── */
+.doc-evidence-highlight {
+  background-color: rgba(245, 200, 66, 0.35);
+  box-shadow: 0 0 0 2px rgba(212, 168, 67, 0.50);
+  border-radius: 2px; padding: 1px 3px; display: inline;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT RULES
+   ══════════════════════════════════════════════════════════= */
+@media print {
+  @page { size: A4; margin: 12mm 15mm; }
+  body {
+    background-image: none !important;
+    background-color: #ffffff !important;
+    color: #101828 !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
+  }
+  aside, header, nav, .no-print,
+  #report-selector-container,
+  #report-controls-bar { display: none !important; }
+  main { margin: 0 !important; padding: 0 !important; max-width: 100% !important; width: 100% !important; }
+  .lg\:pl-64 { padding-left: 0 !important; }
+  #fincheck-report-document {
+    border: none !important; box-shadow: none !important;
+    padding: 0 !important; margin: 0 !important;
+    width: 100% !important; max-width: 100% !important;
+    background: transparent !important;
+  }
+  .report-page-break { page-break-before: always !important; break-before: page !important; }
+  .avoid-page-break, tr, .finding-card, .evidence-card, .section-card {
+    page-break-inside: avoid !important; break-inside: avoid !important;
+  }
+}
