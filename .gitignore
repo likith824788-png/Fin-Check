@@ -34,5 +34,9 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
-*.swp
 *.swo
+
+# Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+

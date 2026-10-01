@@ -20,6 +20,8 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { formatCurrency } from '../../utils/formatting';
+import { auth } from '../../services/firebase';
+import { getFirestoreUserData } from '../../services/firestoreSync';
 
 export default function FinancialFacts() {
   const navigate = useNavigate();
@@ -46,10 +48,48 @@ export default function FinancialFacts() {
         api.getFacts(),
         api.getDocuments().catch(() => ({ data: [] }))
       ]);
-      setFacts(factsRes.data || []);
-      setDocuments(docsRes.data || []);
+      let loadedFacts = factsRes.data || [];
+      let loadedDocs = docsRes.data || [];
+
+      // Merge facts persisted in Cloud Firestore for current user
+      const currentUser = auth?.currentUser;
+      if (currentUser?.uid) {
+        try {
+          const fsUser = await getFirestoreUserData(currentUser.uid);
+          if (fsUser?.financial_facts?.length) {
+            const seen = new Set(loadedFacts.map(f => f.factId || f.id));
+            const extra = fsUser.financial_facts.filter(f => !seen.has(f.factId || f.id));
+            loadedFacts = [...extra, ...loadedFacts];
+          }
+          if (fsUser?.uploaded_documents?.length) {
+            const seenDocs = new Set(loadedDocs.map(d => d.documentId || d.fileName));
+            const extraDocs = fsUser.uploaded_documents.filter(d => !seenDocs.has(d.documentId) && !seenDocs.has(d.fileName));
+            loadedDocs = [...extraDocs, ...loadedDocs];
+          }
+        } catch (fsErr) {
+          console.warn('[FINCHECK AI] Firestore facts merge note:', fsErr);
+        }
+      }
+
+      setFacts(loadedFacts);
+      setDocuments(loadedDocs);
     } catch (err) {
       console.error(err);
+      // Fallback directly to Cloud Firestore
+      const currentUser = auth?.currentUser;
+      if (currentUser?.uid) {
+        try {
+          const fsUser = await getFirestoreUserData(currentUser.uid);
+          if (fsUser?.financial_facts?.length) {
+            setFacts(fsUser.financial_facts);
+          }
+          if (fsUser?.uploaded_documents?.length) {
+            setDocuments(fsUser.uploaded_documents);
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
     } finally {
       setLoading(false);
     }

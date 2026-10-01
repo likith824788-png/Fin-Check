@@ -1,3 +1,11 @@
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { auth } from './firebase';
+import { saveUserToFirestore } from './firestoreSync';
 import api from './api';
 
 const DEFAULT_USER = {
@@ -23,32 +31,93 @@ export const authService = {
     return DEFAULT_USER;
   },
 
-  async login(email, password) {
+  async login(email, password, extraProfile = {}) {
+    const cleanEmail = (email || DEFAULT_USER.email).trim().toLowerCase();
+    // Firebase Auth requires password >= 6 characters
+    const rawPass = password || 'FinCheck2026!';
+    const safePassword = rawPass.length >= 6 ? rawPass : rawPass.padEnd(6, '0');
+
+    let fbUser = null;
+    let token = null;
+
+    // 1. Authenticate with Firebase Authentication
+    if (auth) {
+      try {
+        let userCredential;
+        try {
+          userCredential = await signInWithEmailAndPassword(auth, cleanEmail, safePassword);
+        } catch (signInErr) {
+          // If user doesn't exist yet, automatically register in Firebase Auth
+          if (
+            signInErr.code === 'auth/user-not-found' || 
+            signInErr.code === 'auth/invalid-credential' || 
+            signInErr.code === 'auth/invalid-login-credentials'
+          ) {
+            userCredential = await createUserWithEmailAndPassword(auth, cleanEmail, safePassword);
+          } else {
+            throw signInErr;
+          }
+        }
+
+        if (userCredential?.user) {
+          fbUser = userCredential.user;
+          token = await fbUser.getIdToken();
+          console.log('[FINCHECK AI Auth] Firebase Auth successful:', fbUser.email, 'UID:', fbUser.uid);
+        }
+      } catch (fbErr) {
+        console.warn('[FINCHECK AI Auth] Firebase Auth notice (falling back gracefully):', fbErr.message);
+      }
+    }
+
+    // 2. Build User Profile object
+    const derivedName = cleanEmail.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const userProfile = {
+      uid: fbUser?.uid || `usr_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`,
+      email: cleanEmail,
+      displayName: extraProfile.displayName || derivedName || DEFAULT_USER.displayName,
+      companyId: extraProfile.companyId || 'company_001',
+      companyName: extraProfile.companyName || 'Acme Industries',
+      role: extraProfile.role || 'Lead Senior Auditor',
+      avatarUrl: DEFAULT_USER.avatarUrl
+    };
+
+    // 3. Persist User and Login to Cloud Firestore
     try {
-      const res = await api.login({ email, password });
-      const { user, token } = res.data;
-      localStorage.setItem('fincheck_user', JSON.stringify(user));
-      localStorage.setItem('fincheck_token', token);
-      return user;
+      await saveUserToFirestore(userProfile);
+    } catch (fsErr) {
+      console.warn('[FINCHECK AI Auth] Could not sync user to Firestore:', fsErr);
+    }
+
+    // 4. Save to localStorage & session
+    const finalToken = token || `sess_${cleanEmail}_valid`;
+    localStorage.setItem('fincheck_user', JSON.stringify(userProfile));
+    localStorage.setItem('fincheck_token', finalToken);
+
+    // 5. Notify backend API to keep session synchronized
+    try {
+      await api.login({ email: cleanEmail, password: safePassword, idToken: finalToken });
+    } catch (apiErr) {
+      // Backend session sync notice
+    }
+
+    return userProfile;
+  },
+
+  async logout() {
+    try {
+      if (auth) {
+        await firebaseSignOut(auth);
+      }
     } catch (e) {
-      // Local fallback for offline demo experience
-      const user = {
-        ...DEFAULT_USER,
-        email: email || DEFAULT_USER.email,
-        displayName: (email ? email.split('@')[0] : 'Lead Senior Auditor').replace('.', ' ')
-      };
-      localStorage.setItem('fincheck_user', JSON.stringify(user));
-      localStorage.setItem('fincheck_token', 'local_demo_session_token');
-      return user;
+      console.warn('[FINCHECK AI Auth] Error during Firebase sign out:', e);
+    } finally {
+      localStorage.removeItem('fincheck_user');
+      localStorage.removeItem('fincheck_token');
     }
   },
 
-  logout() {
-    localStorage.removeItem('fincheck_user');
-    localStorage.removeItem('fincheck_token');
-  },
-
   isAuthenticated() {
-    return true; // Allows demo access, user can switch or logout
+    return !!localStorage.getItem('fincheck_user');
   }
 };
+
